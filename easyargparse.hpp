@@ -206,9 +206,6 @@ template<typename R,typename P>
 void register_parameter(argparse::ArgumentParser &p,P value){
 	// static_assert(std::is_same<>)
 	auto& a  = p.add_argument(value.name);
-	std::cout<< "Registering" << std::endl;
-	std::cout<< "typeid(R).name()" << " " << typeid(R).name() << std::endl;
-	std::cout<< "value.name" << " " << value.name << std::endl;
 	if(auto n = value.number){
 		if(*n==-1){
 			a.remaining();
@@ -232,13 +229,11 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 	
 	if(auto d = value.default_value){
 		auto & b = a.default_value(*d);		
-		std::cout<< value.name << " " << " has adefault: "<< typeid(*d).name() << std::endl;
 
 	}
 	
 	if constexpr (!instance<std::optional,R>()){
 		a.required();
-		std::cout<< "data register" << std::endl;
 	}
 
 	using t = typename  inner<R>::type ;
@@ -258,22 +253,14 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 template<typename P>
 auto obtain_parameter(argparse::ArgumentParser &p,std::vector<std::string>::reverse_iterator &it){
 	std::string s = *it++;
-	std::cout<< "s" << " " << s << " " << "typeid(P).name()" << " " << typeid(P).name() << std::endl;
 	if constexpr (is_optional<P>()){
 		try{
 			return p.present<typename P::value_type>(s);
 		}catch(const std::logic_error &e){
 			try{
-				
-				std::cout<< typeid(typename P::value_type).name() << std::endl;
-
 				auto u = p.get<typename P::value_type>(s);
-				std::cout<< "redo parameter" << std::endl;
 				return std::optional<typename P::value_type>(p.get<typename P::value_type>(s));
 			}catch(...){
-				std::cout<< "Canconst " << std::endl;
-				std::cout<< "s" << " " << s << std::endl;
-				std::cout<< typeid(typename P::value_type).name() << std::endl;
 				return std::optional<typename P::value_type>({});
 			}
 
@@ -291,7 +278,6 @@ template<typename F, typename ...Args>
 struct  run_function<F,std::tuple<Args...>>{
 	void operator()	(F f,argparse::ArgumentParser &p,std::vector<std::string > &names){
 		auto it = names.rbegin();
-		std::cout<< "typeid(std::tuple<Args...>).name()" << " " << typeid(std::tuple<Args...>).name() << std::endl;
 		f(obtain_parameter<Args>(p,it)...);
 	}
 };
@@ -302,7 +288,7 @@ struct  run_function<F,std::tuple<Args...>>{
 template<typename Signature,typename First,typename ...Args>
 void mark(argparse::ArgumentParser &p,First first,Args... args){
 	using signature = unpack<Signature> ;
-    using h=typename signature::head ;
+    using h = typename signature::head ;
     if constexpr (!std::is_same<First,const char *>::value){
     	register_parameter<typename signature::head,First>(p,first);    	
     }else{
@@ -324,25 +310,37 @@ class EasyArguments
     	argparse::ArgumentParser program;
     	F ff;
     	std::vector<std::string> names;
-        using a = typename signature<F>::argument_type;
-        EasyArguments(F f,Args... args){
-        	program = argparse::ArgumentParser("program");
+        using arguments = typename signature<F>::argument_type;
+
+        EasyArguments(std::string program_name,F f,Args... args){
+        	program = argparse::ArgumentParser(program_name);
         	ff = f;
-        	names = std::vector<std::string>{(args.name)...};
-        	mark<a,Args...>(program,args...);
-            // std::cout<< std::tuple_size<std::tuple<Args...>>::value << std::endl;
+        	names = std::vector<std::string>{(get_name(args))...};
+        	mark<arguments,Args...>(program,args...);
         };
+
+        std::string get_name(const  char *s){
+        	return std::string(s);
+        }
+
+        std::string get_name(std::string s){
+        	return s;
+        }
+
+        template<typename T>
+        std::string get_name(Parameter<T> s){
+        	return s.name;
+        }
         void operator () (int argc,const char ** argv){
         	try {
         	  program.parse_args(argc, argv);
-        	  std::cout<< "success" << std::endl;
         	}
         	catch (const std::runtime_error& err) {
         	  std::cout << err.what() << std::endl;
         	  std::cout << program;
         	  exit(0);
         	}
-        	run_function<F,a>()(ff,program,names);
+        	run_function<F,arguments>()(ff,program,names);
         }
 };
 
