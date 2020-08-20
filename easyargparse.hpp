@@ -8,6 +8,12 @@
 #include "argparse/argparse.hpp"
 
 /////////////////////////////////////////////////////////////////
+// code to grab signature of function based on
+// https://stackoverflow.com/questions/28033251/can-you-extract-types-from-template-parameter-function-signature
+// with some modifications
+/////////////////////////////////////////////////////////////////
+
+namespace easyargparse {
 
 template<typename S>
 struct signature { };
@@ -39,28 +45,6 @@ struct signature<R(&&)(Args...)>
     using return_type = R;
     using argument_type = std::tuple<Args...>;
 };
-
-
-////////////////////////////////////////////////////////////////////////
-
-
-// template<template<typename> typename R,typename F>
-// struct recursive_single;
-
-// template<template<typename > typename R,typename F>
-// struct recursive_single<R,std::tuple<F>>{
-//     void operator () (){
-//     	R<F>()();
-//     }
-// };
-
-// template<template<typename> typename R,typename F,typename ...Args>
-// struct recursive_single<R,std::tuple<F,Args...>>{
-//     void operator()(){
-//         R<F>()();
-//         recursive_single<R,std::tuple<Args...>>()();
-//     }
-// };
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -157,9 +141,11 @@ public:
 
 };
 
-Parameter<std::string > operator "" _p (const char * a,std::size_t b){
-	auto s = std::string(a);
-	return Parameter<std::string>(a);
+namespace literals{
+	Parameter<std::string > operator "" _p (const char * a,std::size_t b){
+		auto s = std::string(a);
+		return Parameter<std::string>(a);
+	}
 }
 
 template<typename T,typename U>
@@ -358,7 +344,7 @@ class EasyArguments
 
 
 
-
+} // namespace easyargparse
 
 
 #endif
