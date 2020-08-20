@@ -14,7 +14,7 @@
 // with some modifications
 /////////////////////////////////////////////////////////////////
 
-namespace easyargparse {
+namespace easyarg {
 
 template<typename S>
 struct signature { };
