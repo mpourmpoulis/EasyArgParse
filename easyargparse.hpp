@@ -175,6 +175,18 @@ constexpr bool instance(){return instance_t<T,U>::value;}
 template<typename T>
 constexpr bool is_optional(){return instance<std::optional,T>();}
 
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename T> struct  is_array_t:public std::false_type {};
+template<typename T,std::size_t N> struct is_array_t<std::array<T,N>>: public std::true_type {};
+
+template<typename T>
+constexpr bool is_array(){
+	return is_array_t<T>::value;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T> struct inner;
 template<typename T>
@@ -198,6 +210,22 @@ struct inner{
 };
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename T>
+constexpr int get_number_from_type();
+
+template<typename T>
+constexpr int get_number_from_type(){
+	if constexpr (is_optional<T>()){
+		return get_number_from_type<typename T::value_type>();
+	} else if constexpr (is_array<T>()){
+		return std::tuple_size<T>::value;
+	} else if constexpr (instance<std::pair,T>()){
+		return 2;
+	}else{
+		return 0;
+	}	
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -206,12 +234,16 @@ template<typename R,typename P>
 void register_parameter(argparse::ArgumentParser &p,P value){
 	// static_assert(std::is_same<>)
 	auto& a  = p.add_argument(value.name);
-	if(auto n = value.number){
-		if(*n==-1){
-			a.remaining();
-		}else if(*n>1){
-			a.nargs(*n);
-		}		
+	if constexpr (constexpr int nc = get_number_from_type<R>()){
+		a.nargs(nc);		
+	}else{
+		if(auto n = value.number){
+			if(*n==-1){
+				a.remaining();
+			}else if(*n>1){
+				a.nargs(*n);
+			}		
+		}
 	}
 	if(auto description = value.description){
 		a.help(*description);
