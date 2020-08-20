@@ -5,7 +5,8 @@
 #include <optional>
 #include <vector>
 #include <tuple>
-#include "argparse/argparse.hpp"
+// #include "argparse/argparse.hpp"
+#include "argparse/include/argparse/argparse.hpp"
 
 /////////////////////////////////////////////////////////////////
 // code to grab signature of function based on
@@ -141,12 +142,13 @@ public:
 
 };
 
-namespace literals{
+
 	Parameter<std::string > operator "" _p (const char * a,std::size_t b){
 		auto s = std::string(a);
 		return Parameter<std::string>(a);
 	}
-}
+
+
 
 template<typename T,typename U>
 constexpr bool is_parameter(){return std::is_same<U,Parameter<T>>::value;}
@@ -301,9 +303,13 @@ template<typename Signature,typename First,typename ...Args>
 void mark(argparse::ArgumentParser &p,First first,Args... args){
 	using signature = unpack<Signature> ;
     using h=typename signature::head ;
+    if constexpr (!std::is_same<First,const char *>::value){
+    	register_parameter<typename signature::head,First>(p,first);    	
+    }else{
+    	register_parameter<typename signature::head,Parameter<std::string>>(p,Parameter<std::string >(first));
+    }
     
-    register_parameter<typename signature::head,First>(p,first);
-    
+	    
 
     if constexpr (signature::has_tail()){
     	mark<typename signature::tail,Args...>(p,args...);
