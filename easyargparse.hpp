@@ -211,6 +211,11 @@ struct inner<std::array<T,N>>{
 
 
 template<typename T>
+struct inner<std::pair<T,T>>{
+	using type = typename inner<T>::type;
+};
+
+template<typename T>
 struct inner{
 	using type = T;
 };
@@ -227,6 +232,12 @@ template<typename T>
 struct value_type<T,std::void_t<typename T::value_type>> {
 	using type = typename T::value_type;
 };
+
+template<typename T>
+struct value_type<std::pair<T,T>>{
+	using type = T;
+};
+
 
 template<typename T>
 using value_type_t = typename  value_type<T>::type;
@@ -307,15 +318,19 @@ auto obtain_parameter(argparse::ArgumentParser &p,std::vector<std::string>::reve
 	std::string s = *it++;
 	constexpr bool c = is_optional<P>();
 	using data_type	= std::conditional_t<c,value_type_t<P>,P> ;
-	constexpr bool a = is_array<data_type>();
+	constexpr bool a = is_array<data_type>()||std::is_array_v<data_type>;
+	constexpr bool ip = instance<std::pair,data_type>();
 	using temporary_type = 
-		std::conditional_t<a ,std::vector<value_type_t<data_type>>, data_type> ;
+		std::conditional_t<a||ip ,std::vector<value_type_t<data_type>>, data_type> ;
 	if constexpr (c){
 		auto data = p.present<temporary_type>(s);
 		if constexpr (a){
 			data_type result;
-			std::copy(data.begin(),data.end(),result.begin());
+			std::copy(*data.begin(),*data.end(),std::begin(result));
 			return P(result);
+		}else if constexpr (ip){
+			data_type result = {(*data).at(0),(*data).at(1)};
+			return result;
 		}else{
 			return data;
 		}
@@ -324,7 +339,10 @@ auto obtain_parameter(argparse::ArgumentParser &p,std::vector<std::string>::reve
 
 		if constexpr (a){
 			data_type result;
-			std::copy(data.begin(),data.end(),result.begin());
+			std::copy(data.begin(),data.end(),std::begin(result));
+			return result;
+		}else if constexpr (ip){
+			data_type result = {data.at(0),data.at(1)};
 			return result;
 		}else{
 			return data;
