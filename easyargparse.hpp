@@ -292,13 +292,16 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 	}
 	
 	if(auto d = value.default_value){
-		auto & b = a.default_value(*d);		
-
+		a.default_value(*d);		
+		if constexpr (std::is_same_v<decltype(d),std::optional<bool>>){
+			a.implicit_value(!(*d));
+		}		
 	}else{
 		if constexpr (std::is_same_v<R,bool>){
 			a.default_value(false);
-		}
-		
+			a.implicit_value(true);
+			std::cout<< "success" << std::endl;
+		}		
 	}
 	
 	if constexpr (!instance<std::optional,R>() && !std::is_same_v<R,bool>){
@@ -383,7 +386,8 @@ void mark(argparse::ArgumentParser &p,First first,Args... args){
     if constexpr (!std::is_same<First,const char *>::value){
     	register_parameter<typename signature::head,First>(p,first);    	
     }else{
-    	register_parameter<typename signature::head,Parameter<std::string>>(p,Parameter<std::string >(first));
+    	using new_type = std::conditional_t< is_optional<h>() , value_type_t<h> , h>;
+    	register_parameter<typename signature::head,Parameter<new_type>>(p,Parameter<new_type>(first));
     }
     
 	    
