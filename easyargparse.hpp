@@ -330,7 +330,7 @@ auto obtain_parameter(argparse::ArgumentParser &p,std::vector<std::string>::reve
 			return P(result);
 		}else if constexpr (ip){
 			data_type result = {(*data).at(0),(*data).at(1)};
-			return result;
+			return P(result);
 		}else{
 			return data;
 		}
