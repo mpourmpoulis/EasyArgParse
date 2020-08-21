@@ -324,6 +324,10 @@ auto obtain_parameter(argparse::ArgumentParser &p,std::vector<std::string>::reve
 		std::conditional_t<a||ip ,std::vector<value_type_t<data_type>>, data_type> ;
 	if constexpr (c){
 		auto data = p.present<temporary_type>(s);
+		if(!data){
+			return data;
+		}
+		
 		if constexpr (a){
 			data_type result;
 			std::copy(*data.begin(),*data.end(),std::begin(result));
@@ -357,9 +361,9 @@ struct  run_function;
 
 template<typename F, typename ...Args>
 struct  run_function<F,std::tuple<Args...>>{
-	void operator()	(F f,argparse::ArgumentParser &p,std::vector<std::string > &names){
+	auto operator()	(F f,argparse::ArgumentParser &p,std::vector<std::string > &names){
 		auto it = names.rbegin();
-		f(obtain_parameter<Args>(p,it)...);
+		return f(obtain_parameter<Args>(p,it)...);
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -392,6 +396,7 @@ class EasyArguments
     	F ff;
     	std::vector<std::string> names;
         using arguments = typename signature<F>::argument_type;
+        using return_type = typename signature<F>::return_type;
 
         EasyArguments(std::string program_name,F f,Args... args){
         	program = argparse::ArgumentParser(program_name);
@@ -412,7 +417,7 @@ class EasyArguments
         std::string get_name(Parameter<T> s){
         	return s.name;
         }
-        void operator () (int argc,const char ** argv){
+		return_type operator () (int argc,const char ** argv){
         	try {
         	  program.parse_args(argc, argv);
         	}
@@ -421,7 +426,7 @@ class EasyArguments
         	  std::cout << program;
         	  exit(0);
         	}
-        	run_function<F,arguments>()(ff,program,names);
+			return run_function<F,arguments>()(ff,program,names);
         }
 };
 
