@@ -325,12 +325,12 @@ auto obtain_parameter(argparse::ArgumentParser &p,std::vector<std::string>::reve
 	if constexpr (c){
 		auto data = p.present<temporary_type>(s);
 		if(!data){
-			return data;
+			return P({});
 		}
 		
 		if constexpr (a){
 			data_type result;
-			std::copy(*data.begin(),*data.end(),std::begin(result));
+			std::copy((*data).begin(),(*data).end(),std::begin(result));
 			return P(result);
 		}else if constexpr (ip){
 			data_type result = {(*data).at(0),(*data).at(1)};
