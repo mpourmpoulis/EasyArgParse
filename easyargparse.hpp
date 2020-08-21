@@ -68,6 +68,7 @@ struct unpack<std::tuple<T,Args...>>{
 
 ////////////////////////////////////////////////////////////////////////
 
+// not really use at the moment
 template<template<typename > typename R,typename F>
 struct recursive_single{
 	using f = unpack<F> ;
@@ -82,7 +83,7 @@ struct recursive_single{
 };
 
 ////////////////////////////////////////////////////////////////////////
-
+// not really use at the moment
 template<typename F,typename S>
 constexpr bool compatible(){
 	if constexpr (std::is_same<F,S>::value || std::is_same<std::optional<S>,S>::value){
@@ -295,7 +296,7 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 
 	}
 	
-	if constexpr (!instance<std::optional,R>()){
+	if constexpr (!instance<std::optional,R>() && !std::is_same_v<R,bool>){
 		a.required();
 	}
 
