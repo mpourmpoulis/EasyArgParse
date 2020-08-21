@@ -294,6 +294,11 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 	if(auto d = value.default_value){
 		auto & b = a.default_value(*d);		
 
+	}else{
+		if constexpr (std::is_same_v<R,bool>){
+			a.default_value(false);
+		}
+		
 	}
 	
 	if constexpr (!instance<std::optional,R>() && !std::is_same_v<R,bool>){
