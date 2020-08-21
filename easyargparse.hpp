@@ -204,12 +204,32 @@ struct inner<std::list<T>>{
 	using type = typename inner<T>::type ;
 };
 
+template<typename T,std::size_t N>
+struct inner<std::array<T,N>>{
+	using type = typename inner<T>::type ;
+};
+
+
 template<typename T>
 struct inner{
 	using type = T;
 };
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename T,typename = void>
+struct value_type{
+	using type = T ;
+};
+
+template<typename T>
+struct value_type<T,std::void_t<typename T::value_type>> {
+	using type = typename T::value_type;
+};
+
+template<typename T>
+using value_type_t = typename  value_type<T>::type;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename T>
 constexpr int get_number_from_type();
@@ -235,7 +255,7 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 	// static_assert(std::is_same<>)
 	auto& a  = p.add_argument(value.name);
 	if constexpr (constexpr int nc = get_number_from_type<R>()){
-		a.nargs(nc);		
+		a.nargs(nc);
 	}else{
 		if(auto n = value.number){
 			if(*n==-1){
@@ -285,20 +305,31 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 template<typename P>
 auto obtain_parameter(argparse::ArgumentParser &p,std::vector<std::string>::reverse_iterator &it){
 	std::string s = *it++;
-	if constexpr (is_optional<P>()){
-		try{
-			return p.present<typename P::value_type>(s);
-		}catch(const std::logic_error &e){
-			try{
-				auto u = p.get<typename P::value_type>(s);
-				return std::optional<typename P::value_type>(p.get<typename P::value_type>(s));
-			}catch(...){
-				return std::optional<typename P::value_type>({});
-			}
-
+	constexpr bool c = is_optional<P>();
+	using data_type	= std::conditional_t<c,value_type_t<P>,P> ;
+	constexpr bool a = is_array<data_type>();
+	using temporary_type = 
+		std::conditional_t<a ,std::vector<value_type_t<data_type>>, data_type> ;
+	if constexpr (c){
+		auto data = p.present<temporary_type>(s);
+		if constexpr (a){
+			data_type result;
+			std::copy(data.begin(),data.end(),result.begin());
+			return P(result);
+		}else{
+			return data;
 		}
 	}else{
-		return p.get<P>(s);
+		auto data = p.get<temporary_type>(s);
+
+		if constexpr (a){
+			data_type result;
+			std::copy(data.begin(),data.end(),result.begin());
+			return result;
+		}else{
+			return data;
+		}
+
 	}	
 }
 
