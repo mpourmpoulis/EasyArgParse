@@ -7,12 +7,12 @@ WIP
 <!-- MarkdownTOC  autolink="true" -->
 
 - [Example](#example)
-	- [First example](#first-example)
+    - [First example](#first-example)
 - [Datatypes](#datatypes)
-	- [Primitive data types](#primitive-data-types)
-	- [Utilities](#utilities)
-	- [Containers](#containers)
-	- [TODO?](#todo)
+    - [Primitive data types](#primitive-data-types)
+    - [Utilities](#utilities)
+    - [Containers](#containers)
+    - [TODO?](#todo)
 
 <!-- /MarkdownTOC -->
 
@@ -34,8 +34,8 @@ auto f(bool a,bool b, Pair<std::string> name, std::optional<int> age){
     auto [firstname, lastname]  = name;
     if(age){
         std::cout<< "Your age is " << " " << *age << std::endl;
-        std::cout<< firstname << " " << lastname << std::endl;
     }
+        std::cout<< firstname << " " << lastname << std::endl;
 }
 
 int main(int argc,const char **argv)
@@ -61,6 +61,26 @@ Optional arguments:
 --age        	int 
 ```
 
+and if we try a few more prompts
+
+```bash
+$example No Name
+You entered false false
+No Name
+
+$example -a No Name
+You entered true false
+No Name
+
+$example -b No Name
+You entered false true
+No Name
+
+$example -ab No Name --age 42
+You entered true true
+Your age is  42
+No Name
+```
 
 
 

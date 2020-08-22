@@ -308,7 +308,7 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 		
 	}
 	
-	if(auto d = value.default_value){
+	if(auto d = value.default_value){		
 		a.default_value(*d);		
 		if constexpr (std::is_same_v<decltype(d),std::optional<bool>>){
 			a.implicit_value(!(*d));
@@ -317,7 +317,6 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 		if constexpr (std::is_same_v<R,bool>){
 			a.default_value(false);
 			a.implicit_value(true);
-			std::cout<< "success" << std::endl;
 		}		
 	}
 	
@@ -358,7 +357,7 @@ auto obtain_parameter(argparse::ArgumentParser &p,std::vector<std::string>::reve
 	if constexpr (c){
 		auto data = p.present<temporary_type>(s);
 		if(!data){
-			return P({});
+			return P{};
 		}
 		
 		if constexpr (a){
@@ -367,6 +366,7 @@ auto obtain_parameter(argparse::ArgumentParser &p,std::vector<std::string>::reve
 			return P(result);
 		}else if constexpr (ip){
 			data_type result = {(*data).at(0),(*data).at(1)};
+
 			return P(result);
 		}else{
 			return data;

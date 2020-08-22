@@ -11,8 +11,8 @@ auto f(bool a,bool b, Pair<std::string> name, std::optional<int> age){
     auto [firstname, lastname]  = name;
     if(age){
         std::cout<< "Your age is " << " " << *age << std::endl;
-        std::cout<< firstname << " " << lastname << std::endl;
     }
+    std::cout<< firstname << " " << lastname << std::endl;
 }
 
 int main(int argc,const char **argv)
