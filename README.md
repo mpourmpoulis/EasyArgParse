@@ -8,6 +8,9 @@ WIP
 
 - [Example](#example)
     - [First example](#first-example)
+- [Getting Started](#getting-started)
+    - [Boolean flags](#boolean-flags)
+    - [Using std::optional](#using-stdoptional)
 - [Datatypes](#datatypes)
     - [Primitive data types](#primitive-data-types)
     - [Utilities](#utilities)
@@ -82,6 +85,56 @@ Your age is  42
 No Name
 ```
 
+## Getting Started
+
+
+### Boolean flags
+
+To declare a boolean flag, you simply need 
+
+```cpp
+auto f(bool a){
+    std::cout<< std::boolalpha <<  a << std::endl;
+}
+
+auto temporary = easyarg::EasyArguments("example",f,"-a");
+```
+
+```python
+$example 
+false
+
+$example -a
+true
+```
+
+### Using std::optional
+
+Using std::optional we can specify whether an argument is required or not, for example
+
+```cpp
+auto f(std::string name,std::optional<int> age){
+    std::cout<< "name" << " " << name << std::endl;
+    if(age){
+        std::cout<< "age" << " " << *age << std::endl;
+    }   
+}
+
+auto temporary = easyarg::EasyArguments("example",f,"--name","--age");
+```
+
+we have
+
+```python
+$example --help
+Usage: example [options] 
+
+Optional arguments:
+-h --help       shows help message and exits
+-v --version    prints version information and exits
+--name          string [Required]
+--age           int 
+```
 
 
 
