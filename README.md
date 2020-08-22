@@ -11,6 +11,7 @@ WIP
 - [Getting Started](#getting-started)
     - [Boolean flags](#boolean-flags)
     - [Using std::optional](#using-stdoptional)
+    - [Specifying help messages](#specifying-help-messages)
 - [Datatypes](#datatypes)
     - [Primitive data types](#primitive-data-types)
     - [Utilities](#utilities)
@@ -100,6 +101,8 @@ auto f(bool a){
 auto temporary = easyarg::EasyArguments("example",f,"-a");
 ```
 
+and you have functionality analogous to `"store_true"`
+
 ```python
 $example 
 false
@@ -135,6 +138,30 @@ Optional arguments:
 --name          string [Required]
 --age           int 
 ```
+
+### Specifying help messages
+
+In order to specify the help message you can use the `<<` operator! So for example,
+
+```cpp
+auto f(std::string name,std::optional<int> age);
+
+auto temporary = easyarg::EasyArguments("example",f,
+    "--name"_p<<"Your first name ",
+    "--age"_p<<"Your age in years (a single int )");
+```
+produces the following message
+
+```
+Usage: example [options] 
+
+Optional arguments:
+-h --help       shows help message and exits
+-v --version    prints version information and exits
+--name          Your first name [Required]
+--age           Your age in years (a single int )
+```
+
 
 
 

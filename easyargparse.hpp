@@ -112,13 +112,25 @@ public:
 		name = _name;
 		number = _number; 
 		default_value = _default_value;
-		description = description;
+		description = _description;
 		if constexpr (std::is_same<T,bool>::value){
 			if(!default_value){
 				default_value = false;
 			}			
-		}		
+		}	
+
 	}
+
+	
+	Parameter<std::vector<std::string>> operator = (std::initializer_list<const char *> value)	{
+		std::vector<std::string > v;
+		for(auto x : value){
+			v.push_back(std::string(x));
+		}
+		
+		return Parameter<std::vector<std::string>>(this->name,this->number,v,this->description);
+	}
+
 
 	template<class U>
 	Parameter<std::vector<U>> operator = (std::initializer_list<U> value)	{
