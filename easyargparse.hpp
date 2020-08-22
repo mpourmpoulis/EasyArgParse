@@ -5,6 +5,7 @@
 #include <optional>
 #include <vector>
 #include <tuple>
+#include <sstream>
 // #include "argparse/argparse.hpp"
 #include "argparse/include/argparse/argparse.hpp"
 
@@ -262,6 +263,25 @@ constexpr int get_number_from_type(){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+template<typename R,typename T>
+auto generate_documentation(argparse::Argument &a){
+	std::ostringstream output;
+	if constexpr (std::is_same_v<T,int>) output<<"int ";
+	if constexpr (std::is_same_v<T,std::string >) output<<"string ";
+	if constexpr (std::is_same_v<T,float>) output<<"float ";
+	if constexpr (std::is_same_v<T,double>) output<<"double  ";
+	if constexpr (std::is_same_v<T,bool>) output<<"bool  ";
+	if(auto n = a.maybe_nargs()){
+		if(*n>1){
+			output<<"* "<<*n <<" ";
+		}		
+	}
+	return output.str();	
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 template<typename R,typename P>
 void register_parameter(argparse::ArgumentParser &p,P value){
 	// static_assert(std::is_same<>)
@@ -277,9 +297,6 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 			}		
 		}
 	}
-	if(auto description = value.description){
-		a.help(*description);
-	}	
 	if constexpr (!is_optional<R>()){
 		if constexpr (!std::is_same<Parameter<R>,P>::value){
 			if(value.default_value){
@@ -304,6 +321,7 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 		}		
 	}
 	
+
 	if constexpr (!instance<std::optional,R>() && !std::is_same_v<R,bool>){
 		a.required();
 	}
@@ -317,6 +335,12 @@ void register_parameter(argparse::ArgumentParser &p,P value){
 	}
 	if constexpr (std::is_same<t,double>::value){
 		a.action([](const std::string& value) { return std::stod(value); });
+	}
+
+	if(auto description = value.description){
+		a.help(*description);
+	}else{
+		a.help(generate_documentation<R,t>(a));
 	}
 }
 

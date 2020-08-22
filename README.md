@@ -51,14 +51,14 @@ Now if we try  `example --help` we get
 Usage: example [options] name 
 
 Positional arguments:
-name         	[Required]
+name         	string * 2 [Required]
 
 Optional arguments:
 -h --help    	shows help message and exits
 -v --version 	prints version information and exits
--a           	
--b           	
---age        	
+-a           	bool  
+-b           	bool  
+--age        	int 
 ```
 
 
